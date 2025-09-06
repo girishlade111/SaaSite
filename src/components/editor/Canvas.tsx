@@ -1,13 +1,21 @@
+
 'use client';
 
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
+import * as React from 'react';
 
 type CanvasProps = {
   view: 'desktop' | 'mobile';
 };
 
 export default function Canvas({ view }: CanvasProps) {
+  const [year, setYear] = React.useState(new Date().getFullYear());
+
+  React.useEffect(() => {
+    setYear(new Date().getFullYear());
+  }, []);
+  
   return (
     <div className="flex h-full w-full items-center justify-center">
       <div
@@ -77,7 +85,7 @@ export default function Canvas({ view }: CanvasProps) {
           </main>
 
           <footer className="p-4 border-t text-center text-xs text-muted-foreground">
-            <p>&copy; {new Date().getFullYear()} QuantumLeap. All rights reserved.</p>
+            <p>&copy; {year} QuantumLeap. All rights reserved.</p>
           </footer>
         </div>
       </div>
