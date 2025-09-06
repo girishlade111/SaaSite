@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { CircleUser, Menu, Package2, Search, Moon, Sun, BarChart, LayoutDashboard } from 'lucide-react';
+import { CircleUser, Menu, Package2, Moon, Sun } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -15,8 +15,8 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import Logo from '@/components/icons/Logo';
-import { cn } from '@/lib/utils';
 import * as React from 'react';
+import MainNav from './MainNav';
 
 
 // A placeholder for a theme hook
@@ -38,35 +38,10 @@ const useTheme = () => {
 };
 
 export default function Header() {
-  const pathname = usePathname();
   const { theme, toggleTheme } = useTheme();
 
-  const navLinks = [
-    { href: '/', label: 'Dashboard', icon: LayoutDashboard },
-    { href: '/analytics', label: 'Analytics', icon: BarChart },
-  ];
-
   return (
-    <header className="sticky top-0 flex h-16 items-center gap-4 border-b bg-card px-4 md:px-6 z-50">
-      <nav className="hidden flex-col gap-6 text-lg font-medium md:flex md:flex-row md:items-center md:gap-5 md:text-sm lg:gap-6">
-        <Link href="/" className="flex items-center gap-2 text-lg font-semibold md:text-base">
-          <Logo className="h-8 w-auto" />
-          <span className="sr-only">SaaSite</span>
-        </Link>
-        {navLinks.map((link) => (
-          <Link
-            key={link.href}
-            href={link.href}
-            className={cn(
-              'flex items-center gap-2 transition-colors hover:text-foreground',
-              pathname === link.href ? 'text-foreground' : 'text-muted-foreground'
-            )}
-          >
-            <link.icon className="h-4 w-4" />
-            {link.label}
-          </Link>
-        ))}
-      </nav>
+    <header className="sticky top-0 flex h-16 items-center gap-4 border-b bg-card px-4 md:px-6 z-40">
       <Sheet>
         <SheetTrigger asChild>
           <Button variant="outline" size="icon" className="shrink-0 md:hidden">
@@ -74,25 +49,13 @@ export default function Header() {
             <span className="sr-only">Toggle navigation menu</span>
           </Button>
         </SheetTrigger>
-        <SheetContent side="left">
-          <nav className="grid gap-6 text-lg font-medium">
-            <Link href="/" className="flex items-center gap-2 text-lg font-semibold">
+        <SheetContent side="left" className="flex flex-col">
+          <nav className="grid gap-2 text-lg font-medium">
+            <Link href="/" className="flex items-center gap-2 text-lg font-semibold mb-4">
               <Logo className="h-8 w-auto" />
               <span className="sr-only">SaaSite</span>
             </Link>
-            {navLinks.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className={cn(
-                  'flex items-center gap-4 transition-colors hover:text-foreground',
-                  pathname === link.href ? 'text-foreground' : 'text-muted-foreground'
-                )}
-              >
-                <link.icon className="h-5 w-5" />
-                {link.label}
-              </Link>
-            ))}
+            <MainNav isMobile={true} />
           </nav>
         </SheetContent>
       </Sheet>

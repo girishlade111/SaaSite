@@ -1,5 +1,4 @@
-import { ArrowUpRight, Users, Eye, MousePointerClick } from 'lucide-react';
-import Header from '@/components/layout/Header';
+import { Users, Eye, MousePointerClick } from 'lucide-react';
 import StatCard from '@/components/analytics/StatCard';
 import TrafficChart from '@/components/analytics/TrafficChart';
 import {
@@ -10,17 +9,15 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { Badge } from '@/components/ui/badge';
-import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import DashboardLayout from '@/components/layout/DashboardLayout';
 
 export default function AnalyticsPage() {
   return (
-    <div className="flex min-h-screen w-full flex-col">
-      <Header />
-      <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
-        <div className="flex items-center">
-          <h1 className="font-headline text-2xl font-semibold">Analytics</h1>
+    <DashboardLayout>
+      <div className="flex-1 space-y-4">
+        <div className="flex items-center justify-between space-y-2">
+          <h1 className="text-3xl font-bold tracking-tight font-headline">Analytics</h1>
         </div>
         <div className="grid gap-4 md:grid-cols-2 md:gap-8 lg:grid-cols-4">
           <StatCard
@@ -112,7 +109,7 @@ export default function AnalyticsPage() {
             </CardContent>
           </Card>
         </div>
-      </main>
-    </div>
+      </div>
+    </DashboardLayout>
   );
 }
