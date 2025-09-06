@@ -51,6 +51,7 @@ import {
   Settings,
   Palette,
   LayoutGrid,
+  Package2,
 } from 'lucide-react';
 import Canvas from './Canvas';
 import { generateContent } from '@/ai/flows/content-generation';
