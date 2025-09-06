@@ -2,6 +2,7 @@
 
 import * as React from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -34,11 +35,12 @@ import {
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { recommendTemplate, TemplateRecommendationOutput } from '@/ai/flows/template-recommendation';
-import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import Image from 'next/image';
 import { useToast } from '@/hooks/use-toast';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 
 const projects = [
   {
@@ -88,10 +90,21 @@ const formSchema = z.object({
   }),
 });
 
+const createSiteSchema = z.object({
+  siteName: z.string().min(3, {
+    message: 'Site name must be at least 3 characters.',
+  }).max(50, {
+    message: 'Site name cannot be longer than 50 characters.'
+  }).regex(/^[a-zA-Z0-9\s-]+$/, {
+    message: 'Site name can only contain letters, numbers, spaces, and hyphens.'
+  }),
+});
+
 export default function DashboardPage() {
   const { toast } = useToast();
   const [recommendedTemplate, setRecommendedTemplate] = React.useState<TemplateRecommendationOutput | null>(null);
   const [isRecommending, setIsRecommending] = React.useState(false);
+  const [isCreateSiteOpen, setCreateSiteOpen] = React.useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -117,17 +130,19 @@ export default function DashboardPage() {
       setIsRecommending(false);
     }
   }
-
+  
   return (
     <DashboardLayout>
       <div className="flex-1 space-y-4">
         <div className="flex items-center justify-between space-y-2">
           <h1 className="text-3xl font-bold tracking-tight font-headline">Dashboard</h1>
           <div className="flex items-center space-x-2">
-            <Button>
-              <PlusCircle className="mr-2 h-4 w-4" />
-              Create New Site
-            </Button>
+            <CreateSiteDialog open={isCreateSiteOpen} onOpenChange={setCreateSiteOpen}>
+              <Button>
+                <PlusCircle className="mr-2 h-4 w-4" />
+                Create New Site
+              </Button>
+            </CreateSiteDialog>
           </div>
         </div>
 
@@ -285,4 +300,58 @@ function TemplateCard({ template, hint }: { template: TemplateRecommendationOutp
       </CardFooter>
     </Card>
   )
+}
+
+function CreateSiteDialog({ children, open, onOpenChange }: { children: React.ReactNode, open: boolean, onOpenChange: (open: boolean) => void }) {
+  const router = useRouter();
+  const form = useForm<z.infer<typeof createSiteSchema>>({
+    resolver: zodResolver(createSiteSchema),
+    defaultValues: {
+      siteName: '',
+    },
+  });
+
+  function onSubmit(values: z.infer<typeof createSiteSchema>) {
+    const siteId = values.siteName.replace(/\s+/g, '-').toLowerCase();
+    router.push(`/editor/${siteId}`);
+    onOpenChange(false);
+    form.reset();
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogTrigger asChild>
+        {children}
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>Create a New Site</DialogTitle>
+          <DialogDescription>
+            Give your new website a name to get started. You can change this later.
+          </DialogDescription>
+        </DialogHeader>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <FormField
+              control={form.control}
+              name="siteName"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Site Name</FormLabel>
+                  <FormControl>
+                    <Input placeholder="My Awesome Project" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+             <DialogFooter>
+              <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>Cancel</Button>
+              <Button type="submit">Create Site</Button>
+            </DialogFooter>
+          </form>
+        </Form>
+      </DialogContent>
+    </Dialog>
+  );
 }
