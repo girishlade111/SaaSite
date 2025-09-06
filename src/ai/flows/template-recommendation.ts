@@ -8,8 +8,13 @@
  * - TemplateRecommendationOutput - The return type for the recommendTemplate function.
  */
 
-import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
+import {z} from 'zod';
+import OpenAI from 'openai';
+
+const openrouter = new OpenAI({
+  baseURL: "https://openrouter.ai/api/v1",
+  apiKey: process.env.OPENROUTER_API_KEY,
+});
 
 const TemplateRecommendationInputSchema = z.object({
   industry: z.string().describe('The industry or type of website.'),
@@ -24,29 +29,35 @@ const TemplateRecommendationOutputSchema = z.object({
 export type TemplateRecommendationOutput = z.infer<typeof TemplateRecommendationOutputSchema>;
 
 export async function recommendTemplate(input: TemplateRecommendationInput): Promise<TemplateRecommendationOutput> {
-  return recommendTemplateFlow(input);
+    const completion = await openrouter.chat.completions.create({
+      model: 'moonshotai/kimi-vl-a3b-thinking:free',
+      messages: [
+        {
+            role: 'system',
+            content: `You are a website template recommendation expert. You must reply with a JSON object that matches the following schema:
+${JSON.stringify(TemplateRecommendationOutputSchema)}`,
+        },
+        {
+          role: 'user',
+          content: `Based on the industry provided, recommend a website template.
+
+Industry: ${input.industry}`,
+        },
+      ],
+      response_format: { type: 'json_object' },
+    });
+
+    const rawJson = completion.choices[0].message.content;
+    if (!rawJson) {
+        throw new Error("Received empty response from AI");
+    }
+    const parsed = JSON.parse(rawJson);
+    const result = TemplateRecommendationOutputSchema.parse(parsed);
+
+    // Ensure the image URL is valid, otherwise use a placeholder.
+    if (!result.templateImageUrl.startsWith('http')) {
+        result.templateImageUrl = 'https://picsum.photos/600/400';
+    }
+    
+    return result;
 }
-
-const prompt = ai.definePrompt({
-  name: 'templateRecommendationPrompt',
-  input: {schema: TemplateRecommendationInputSchema},
-  output: {schema: TemplateRecommendationOutputSchema},
-  prompt: `You are a website template recommendation expert.
-
-  Based on the industry provided, recommend a website template.
-
-  Industry: {{{industry}}}
-  `,
-});
-
-const recommendTemplateFlow = ai.defineFlow(
-  {
-    name: 'recommendTemplateFlow',
-    inputSchema: TemplateRecommendationInputSchema,
-    outputSchema: TemplateRecommendationOutputSchema,
-  },
-  async input => {
-    const {output} = await prompt(input);
-    return output!;
-  }
-);
