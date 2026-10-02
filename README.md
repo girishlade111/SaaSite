@@ -83,3 +83,9 @@ These flows are called from the client-side components to provide a dynamic and 
 *   **Components**: The UI is built with ShadCN components, which are highly composable and customizable. You can find their source in `src/components/ui` and modify them as needed.
 
 Thank you for using SaaSite! We hope you enjoy building your next website.
+
+---
+
+## Author
+
+Built by **Girish Lade** — https://ladestack.in
